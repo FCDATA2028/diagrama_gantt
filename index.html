@@ -30,6 +30,25 @@
         </div>
 
         <div class="header-actions">
+            <!-- Filtro de Mes -->
+            <div class="filter-group">
+                <label for="filter-mes"><i data-lucide="calendar"></i> Mes:</label>
+                <select id="filter-mes">
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8" selected>Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                </select>
+            </div>
+
             <div class="filter-group">
                 <label for="filter-proyecto"><i data-lucide="filter"></i> Proyecto Macro:</label>
                 <select id="filter-proyecto">
@@ -61,31 +80,28 @@
             <span class="kpi-label">Finalizados</span>
             <span class="kpi-value" id="kpi-finalizado">0</span>
         </div>
+        <div class="kpi-card kpi-porcentaje">
+            <span class="kpi-label">% Finalizados</span>
+            <span class="kpi-value" id="kpi-porcentaje">0%</span>
+        </div>
     </section>
 
-    <!-- Barra de Control: Breadcrumb, Ocultar Panel Lateral y Selector de Semanas -->
+    <!-- Barra de Control: Breadcrumb, Ocultar Panel y Botón de Dashboard -->
     <div class="top-controls-bar">
         <div class="controls-left">
             <button class="btn btn-secondary btn-sm" id="btn-toggle-sidebar"
                 title="Ocultar / Mostrar Panel de Actividades">
                 <i data-lucide="layout-sidebar-close" id="icon-toggle-sidebar"></i> Ocultar Actividades
             </button>
-            <div class="breadcrumb-bar" id="breadcrumb-bar">
-                <span class="breadcrumb-item active" id="bc-root"><i data-lucide="calendar"></i> Vista Mensual</span>
-            </div>
-        </div>
-
-        <!-- Toggle para Mostrar / Ocultar Semanas -->
-        <div class="weeks-toggle-container">
-            <span class="toggle-label"><i data-lucide="eye"></i> Mostrar Semanas:</span>
-            <div class="weeks-buttons" id="weeks-toggle-buttons">
-                <!-- Se generan dinámicamente en JS -->
-            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-toggle-dashboard"
+                title="Cambiar entre Vista Gantt y Vista Dashboard">
+                <i data-lucide="pie-chart"></i> Dashboard Analítico
+            </button>
         </div>
     </div>
 
     <!-- Área Principal del Gantt -->
-    <main class="gantt-wrapper">
+    <main class="gantt-wrapper" id="view-gantt">
         <div class="gantt-container" id="gantt-container">
 
             <!-- Panel Izquierdo: Lista de Tareas estructurada -->
@@ -94,17 +110,89 @@
                     <div class="col-actividad">PROYECTO MACRO / ACTIVIDAD / ENCARGADO</div>
                     <div class="col-meta">INICIO</div>
                     <div class="col-meta">FIN</div>
-                    <div class="col-meta">ESTADO</div>
+                    <div class="col-meta">
+                        <!-- Filtro interactivo de Estado -->
+                        <select id="filter-estado" class="filter-estado-header" title="Filtrar por Estado">
+                            <option value="todos">ESTADO (TODOS)</option>
+                            <option value="planificado">PLANIFICADO</option>
+                            <option value="en_proceso">EN PROCESO</option>
+                            <option value="en_revision">EN REVISIÓN</option>
+                            <option value="finalizado">FINALIZADO</option>
+                            <option value="detenido">DETENIDO</option>
+                        </select>
+                    </div>
                     <div class="col-meta">%</div>
                     <div class="col-acciones">ACCIONES</div>
                 </div>
                 <div class="sidebar-body" id="gantt-sidebar-body"></div>
             </div>
 
-            <!-- Panel Derecho: Timeline por Horas -->
+            <!-- Panel Derecho: Timeline por Días del Mes -->
             <div class="gantt-timeline-container" id="timeline-container">
                 <div class="timeline-header" id="timeline-header"></div>
                 <div class="timeline-body" id="timeline-body"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Área de Vista Dashboard Analítico (Oculta por defecto) -->
+    <main class="dashboard-wrapper" id="view-dashboard" style="display: none;">
+        <div class="dashboard-grid">
+
+            <!-- Gráfico 1: Distribución por Proyecto Macro -->
+            <div class="dashboard-card dash-col-6">
+                <div class="dashboard-card-header">
+                    <h3><i data-lucide="layers"></i> Carga y Progreso por Proyecto Macro</h3>
+                    <span class="dash-subtitle">Actividades y avance porcentual global</span>
+                </div>
+                <div class="dashboard-card-body" id="dash-proyectos-container">
+                    <!-- Inyectado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Gráfico 2: Desempeño por Encargado -->
+            <div class="dashboard-card dash-col-6">
+                <div class="dashboard-card-header">
+                    <h3><i data-lucide="users"></i> Asignación y Carga por Encargado</h3>
+                    <span class="dash-subtitle">Volumen de tareas y distribución de personal</span>
+                </div>
+                <div class="dashboard-card-body" id="dash-encargados-container">
+                    <!-- Inyectado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Gráfico 3: Análisis de Prioridades y Riesgos -->
+            <div class="dashboard-card dash-col-12">
+                <div class="dashboard-card-header">
+                    <h3><i data-lucide="alert-triangle"></i> Matriz de Criticidad y Prioridades Operativas</h3>
+                    <span class="dash-subtitle">Distribución de actividades según nivel de prioridad</span>
+                </div>
+                <div class="dashboard-card-body" id="dash-prioridades-container">
+                    <!-- Inyectado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Gráfico 4: Semanas con más Actividades -->
+            <div class="dashboard-card dash-col-6">
+                <div class="dashboard-card-header">
+                    <h3><i data-lucide="calendar-range"></i> Semanas con más Actividades</h3>
+                    <span class="dash-subtitle">Concentración semanal de tareas del mes</span>
+                </div>
+                <div class="dashboard-card-body" id="dash-semanas-container">
+                    <!-- Inyectado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Gráfico 5: Gráfico de Dona de Estados -->
+            <div class="dashboard-card dash-col-6">
+                <div class="dashboard-card-header">
+                    <h3><i data-lucide="pie-chart"></i> Proporción de Estados (Dona)</h3>
+                    <span class="dash-subtitle">Distribución porcentual del ciclo de vida</span>
+                </div>
+                <div class="dashboard-card-body dash-donut-wrapper" id="dash-dona-container">
+                    <!-- Inyectado dinámicamente -->
+                </div>
             </div>
 
         </div>
@@ -129,7 +217,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="proyecto">Proyecto Macro *</label>
-                        <input type="text" id="proyecto" required placeholder="Ej: SLOTTING" />
+                        <input type="text" id="proyecto" list="lista-proyectos" required placeholder="Ej: SLOTTING" />
+                        <datalist id="lista-proyectos"></datalist>
                     </div>
                     <div class="form-group">
                         <label for="encargado">Encargado(s) *</label>
@@ -157,17 +246,6 @@
                     </div>
                 </div>
 
-                <div class="form-row-2">
-                    <div class="form-group">
-                        <label for="hora_inicio">Hora Inicio</label>
-                        <input type="time" id="hora_inicio" value="08:00" step="300" />
-                    </div>
-                    <div class="form-group">
-                        <label for="hora_fin">Hora Fin</label>
-                        <input type="time" id="hora_fin" value="17:00" step="300" />
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label for="estado">Estado *</label>
                     <select id="estado">
@@ -189,6 +267,23 @@
                     <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar Actividad</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Flotante de Confirmación de Borrado -->
+    <div class="modal-overlay" id="modal-confirmar-borrar">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Confirmar Eliminación</h3>
+                <button class="btn-icon" id="btn-cerrar-modal-borrar"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body-text">
+                <p>¿Deseas eliminar esta actividad del proyecto?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancelar-borrar">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btn-aceptar-borrar">Sí, eliminar</button>
+            </div>
         </div>
     </div>
 
